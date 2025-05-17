@@ -1,0 +1,54 @@
+version: "3.9"
+
+services:
+  #POSTGRES
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DBNAME}
+      PGDATA: /var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      back:
+        ipv4_address: ${NET_POSTGRES}
+      default:
+
+  #API_SERVICE
+  api-service:
+    image: vuz-mobapp-backend-api
+    build: ../vuz-mobapp-backend
+    environment:
+      API_PORT: 8008
+      JWT_SECRET: ${JWT_SECRET}
+      POSTGRES_CONNECTION_STRING: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${NET_POSTGRES}:5432/${POSTGRES_DBNAME}
+    ports: 
+      - "8008:8008"
+    networks:
+      back:
+        ipv4_address: ${NET_API_SERVICE}
+      default:
+    restart: on-failure
+    depends_on:
+      - postgres
+    links:
+      - postgres
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "5"
+        max-size: "10m"
+
+networks:
+  back:
+    driver: bridge
+    internal: true
+    ipam:
+      driver: default
+      config:
+        - subnet: ${NET}
+  default:
+    driver: bridge
