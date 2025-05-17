@@ -20,7 +20,9 @@ services:
   #API_SERVICE
   api-service:
     image: vuz-mobapp-backend-api
-    build: ../vuz-mobapp-backend
+    build: 
+      context: ../vuz-mobapp-backend
+      network: host
     environment:
       API_PORT: 8008
       JWT_SECRET: ${JWT_SECRET}
